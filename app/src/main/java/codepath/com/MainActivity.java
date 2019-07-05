@@ -75,25 +75,21 @@ public class  MainActivity extends AppCompatActivity {
 
     private void readItems() {
         try {
-            items = new ArrayList<>(FileUtils.readLines(getDataFile(), Charset.defaultCharset()));
+            items = new ArrayList<>(FileUtils.readLines(getDatafile(), Charset.defaultCharset()));
         } catch (IOException e) {
-
-            log.e("MainActivity", "Error reading file", e);
+            Log.e("MainActivitity", "Error reading file", e);
             items = new ArrayList<>();
         }
 
+
     }
 
-    private void writeItems() {
+    private void writeItems(){
         try {
-            FileUtils.writeLines(getDataFile(), items);
-
+            FileUtils.writeLines(getDatafile(), items);
         } catch (IOException e) {
-            log.e("MainActivity", "Error writing file", e);
+            Log.e("MainActivitity", "Error writing file", e);
+
         }
-
     }
-
-
-
 }

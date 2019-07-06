@@ -1,14 +1,17 @@
 package codepath.com;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.apache.commons.io.FileUtils;
@@ -20,6 +23,11 @@ import java.util.ArrayList;
 
 public class  MainActivity extends AppCompatActivity {
 
+    //a numeric code to identify the edit activity
+    public final static int  EDIT_REQUEST_CODE = 20;
+    //KEYS USED FOR PASSING DATA BETWEEN ACTIVITIES
+    public final static String ITEM_TEXT = "itemText";
+    public final static String ITEM_POSITION = "itemPosition";
     ArrayList<String> items;
     ArrayAdapter<String> itemsAdapter;
     ListView lvItems;
@@ -66,6 +74,42 @@ public class  MainActivity extends AppCompatActivity {
             }
         });
 
+        // set up item listener for edit  (regular click)
+        lvItems.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // create the new activity
+                Intent i = new Intent(MainActivity.this, EdititemActivity.class);
+                // pass the data being edited
+                i.putExtra(ITEM_TEXT, items.get(position));
+                i.putExtra(ITEM_POSITION, position);
+                // display the activity
+                startActivityForResult(i, EDIT_REQUEST_CODE);
+            }
+        });
+
+    }
+    // handle results from edit activity
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // if the edit activity completed ok
+        if (resultCode == RESULT_OK && requestCode == EDIT_REQUEST_CODE){
+          // extract updated item text from result intent extras
+          String updatedItem = data.getExtras().getString(ITEM_TEXT);
+          // extract original position of edited item
+            int position = data.getExtras().getInt(ITEM_POSITION);
+            // update the model with the new item text at the edited position
+            items.set(position, updatedItem);
+            // notify the adapter that the model changed
+            itemsAdapter.notifyDataSetChanged();
+            // persist the changed model
+            writeItems();
+            // notify the user the operation completed ok
+            Toast.makeText(this, "Item updated successfully", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private File getDatafile() {
@@ -77,7 +121,7 @@ public class  MainActivity extends AppCompatActivity {
         try {
             items = new ArrayList<>(FileUtils.readLines(getDatafile(), Charset.defaultCharset()));
         } catch (IOException e) {
-            Log.e("MainActivitity", "Error reading file", e);
+            Log.e("MainActivity", "Error reading file", e);
             items = new ArrayList<>();
         }
 
@@ -88,7 +132,7 @@ public class  MainActivity extends AppCompatActivity {
         try {
             FileUtils.writeLines(getDatafile(), items);
         } catch (IOException e) {
-            Log.e("MainActivitity", "Error writing file", e);
+            Log.e("MainActivity", "Error writing file", e);
 
         }
     }
